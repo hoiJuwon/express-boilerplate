@@ -1,0 +1,41 @@
+version: "3"
+services:
+  hoijuwon_nginx:
+    image: nginx:latest
+    container_name: hoijuwon-nginx
+    volumes:
+      - .:/usr/src/app/node
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - hoijuwon_prod
+    restart: always
+    ports:
+      - "80:80"
+
+  hoijuwon_prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hoijuwon-api
+    env_file: .env
+    ports:
+      - "8000:8000"
+    restart: always
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ap-northeast-1
+        awslogs-group: node-hoijuwon-api-server-log-group
+        awslogs-create-group: "true"
+        awslogs-datetime-format: '\[%b %d, %Y %H:%M:%S\]'
+
+  hoijuwon_dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: hoijuwon-api-dev
+    env_file: .env.development
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/src/app/node
